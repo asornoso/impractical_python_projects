@@ -36,7 +36,6 @@ def findPalindromes(list):
 
 def findPalingrams(list):
     palingrams = []
-
     for word in list:
         end = len(word)
         reversed = word[::-1]
