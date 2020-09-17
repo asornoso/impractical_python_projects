@@ -1,5 +1,6 @@
 """ This script finds anagrams within a word list """
 import sys
+from collections import Counter
 
 def load_file_as_list(path, lowercase=True, uppercase=False, remove_alphabet=True):
     """
@@ -24,6 +25,7 @@ def load_file_as_list(path, lowercase=True, uppercase=False, remove_alphabet=Tru
 
     sys.exit(1)
 
+
 def find_anagrams(key, words):
     """
         Finds anagrams by sorting input, iterating words, and sorting each
@@ -37,17 +39,80 @@ def find_anagrams(key, words):
 
     return anagrams
 
+
+def find_anagrams_with_dicts(key, words):
+    """
+        Finds anagrams by converting strings to Counter dictionaries, then
+        comparing the two.
+    """
+    anagrams = []
+    key_dict = Counter(key.lower())
+    for word in words:
+        if key_dict == Counter(word.lower()):
+            anagrams.append(word)
+    return anagrams
+
+
+
+def find_anagrams_from_phrase(phrase_dict, words):
+    """
+        Finds sub-anagrams in whole phrases by eliminating spaces in phrase, then
+        finding groups of words that could be used for a whole anagram
+    """
+    sub_anagrams = []
+
+    for word in words:
+        word_dict = Counter(word.lower())
+        if phrase_dict & word_dict == word_dict:
+            sub_anagrams.append(word)
+    return sub_anagrams
+
+
+
+
+
+
 def main():
     """ Makes calls to local functions to load a word list and find anagrams"""
     words = load_file_as_list("./resources/words.txt")
+    phrase = input("Enter a phrase to check for anagrams: ")
 
-    user_input = input("Enter a word to check for anagrams: ")
+    # words = ["forest", "fern", "nerd", "fortes", "forts", "rafts", "foster", "softer"]
+    # phrase = "soft forest"
 
-    found = find_anagrams(user_input, words)
-    if len(found) == 0:
-        print("No results found for %s" % (user_input))
-    else:
-        print(found)
+    words.extend(['a', 'i'])
+
+    limit = len(phrase)
+    current_phrase = ""
+    leftovers =  Counter(phrase.lower().replace(" ", ""))
+
+    while len(current_phrase) < limit:
+
+        current_fitting_words = find_anagrams_from_phrase(leftovers, words)
+        if len(current_fitting_words) == 0:
+            print("\nSorry there are no anagrams available for the current",
+            " phrase: %s" %(current_phrase))
+            sys.exit(0)
+        print("Original phrase: %s" % (phrase))
+        print("Current phrase: %s" % (current_phrase))
+        print("Left over letters: %s" % (leftovers))
+        print("Select one of these words: ")
+        print(current_fitting_words)
+        print('\n\n')
+
+        user_input = input("Enter one of the words above or anything else to quit: ")
+        if not user_input in current_fitting_words:
+            print("exiting....")
+            sys.exit(0)
+        else:
+            current_phrase += user_input+ ' '
+            leftovers -= Counter(user_input)
+
+
+    print("Original phrase: %s" % (phrase))
+    print("Final phrase: %s" % (current_phrase))
+
+
 
 
 if __name__ == "__main__":
